@@ -1,9 +1,13 @@
+
+# Imports
+import sys
 import pygame
 from constants import *
 from player import Player
 from circleshape import CircleShape
 from asteroid import Asteroid
 from asteroidfield import AsteroidField
+from shot import Shot
 
 # Asteroids Game
 # This is a simple implementation of the classic Asteroids game using Pygame.
@@ -28,11 +32,13 @@ def main():
     updatable = pygame.sprite.Group()
     drawable = pygame.sprite.Group()
     asteroids = pygame.sprite.Group()
+    shots = pygame.sprite.Group()
 
     # Containers
     Player.containers = (updatable, drawable)
     Asteroid.containers = (asteroids, updatable, drawable)
     AsteroidField.containers = (updatable)
+    Shot.containers = (shots, updatable, drawable)
 
     # Set player
     player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
@@ -53,7 +59,7 @@ def main():
                 return
 
         # Fill the screen with black
-        screen.fill((0, 0, 0))
+        screen.fill("black")
 
         # Draw the player
         for sprite in drawable:
@@ -61,6 +67,21 @@ def main():
 
         # Update the player
         updatable.update(dt)
+
+        # Check for collisions
+        for asteroid in asteroids:
+            if player.collision(asteroid):
+                pygame.quit()
+                print("Game Over!")
+                sys.exit()
+
+        for asteroid in asteroids:
+            for shot in shots:
+                if shot.collision(asteroid):
+                    # Remove the asteroid and the shot
+                    asteroid.split()
+                    shot.kill()
+                    break
 
         # Update the display
         pygame.display.flip()
